@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Decision Making Scenario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --alice-blue: #f0f8ff;
+            --cloud-blue: #dbeafe;
+            --deep-navy: #1a2e4a;
+            --ocean-blue: #1b4f72;
+            --royal-blue: #1565c0;
+            --indigo: #5b21b6;
+            --forest-green: #1a7431;
+            --dark-amber: #92400e;
+            --deep-crimson: #991b1b;
+            --steel-blue: #5b8fbe;
+        }
+
+        body {
+            background-color: var(--alice-blue);
+            color: var(--deep-navy);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background-color: var(--cloud-blue);
+            border: 1px solid var(--steel-blue);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--ocean-blue);
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            background-color: var(--royal-blue);
+            color: white;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .objective-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .objective-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .objective-list li::before {
+            content: "•";
+            color: var(--royal-blue);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+        }
+
+        .logo-container img {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .nav-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--steel-blue);
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .option-btn {
+            border: 2px solid var(--steel-blue);
+            background: white;
+            text-align: left;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .option-btn:hover {
+            border-color: var(--royal-blue);
+            background-color: #f8fafc;
+        }
+
+        .option-btn.selected {
+            border-color: var(--indigo);
+            background-color: #eef2ff;
+            box-shadow: 0 0 0 1px var(--indigo);
+        }
+
+        .feedback-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .feedback-correct {
+            background-color: #dcfce7;
+            border: 2px solid var(--forest-green);
+            color: var(--forest-green);
+            display: block;
+        }
+
+        .feedback-incorrect {
+            background-color: #fee2e2;
+            border: 2px solid var(--deep-crimson);
+            color: var(--deep-crimson);
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .vital-tag {
+            background: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--steel-blue);
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .data-label {
+            font-weight: bold;
+            color: var(--ocean-blue);
+            font-size: 0.9rem;
+        }
+
+        .clinical-image {
+            border: 4px solid white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="relative container mx-auto px-4 py-6 max-w-5xl min-h-screen flex flex-col">
+    <div class="logo-container">
+        <img src="dmsc-logo.png" alt="DMSC Logo" onerror="this.style.display='none'">
+    </div>
+
+    <header class="text-center mb-6 mt-2">
+        <h1 class="text-2xl md:text-3xl">Clinical Decision Making Simulation</h1>
+        <p id="sub-header" class="text-lg text-indigo font-semibold">Gastrointestinal Systems</p>
+    </header>
+
+    <main id="content-area" class="flex-grow">
+        <!-- Landing Page Content -->
+        <div id="view-landing" class="card p-6 md:p-8 animate-fade">
+            <h2 class="text-2xl mb-4 border-b border-steel-blue pb-2">Activity Overview</h2>
+            <p class="text-lg mb-6 leading-relaxed">
+                Welcome to this interactive clinical simulation. As a doctoral Physician Assistant student, you will be presented with a complex gastrointestinal case. You must navigate through the patient's history, interpret vital signs and diagnostic data, and make critical management decisions.
+            </p>
+
+            <h3 class="text-xl mb-3 italic">Learning Objectives</h3>
+            <ul class="objective-list mb-8">
+                <li><strong>Identify</strong> the correct initial diagnostic test for suspected biliary disease given a gastrointestinal case scenario with history and physical exam findings.</li>
+                <li><strong>Determine</strong> the most likely diagnosis given laboratory and imaging results.</li>
+                <li><strong>Select</strong> the appropriate initial management for acute pancreatitis given a post-ERCP complication scenario with associated vital signs and laboratory findings.</li>
+                <li><strong>Recognize</strong> the need for emergent surgical intervention given a postoperative patient with worsening abdominal symptoms and imaging evidence.</li>
+            </ul>
+
+            <div class="flex justify-center">
+                <button onclick="renderPart(1)" class="btn-primary px-10 py-3 rounded-full font-bold text-lg shadow-lg">
+                    Start Case
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="nav-footer">
+        <button onclick="window.location.reload()" class="text-royal-blue font-semibold hover:underline flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            Home
+        </button>
+        <button onclick="handleBack()" class="text-royal-blue font-semibold hover:underline flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back
+        </button>
+    </footer>
+</div>
+
+<script>
+    let state = {
+        currentPart: 0,
+        selectedIndex: null
+    };
+
+    function handleBack() {
+        if (state.currentPart > 1) renderPart(state.currentPart - 1);
+        else window.location.reload();
+    }
+
+    function selectOption(index) {
+        state.selectedIndex = index;
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach((btn, i) => {
+            if (i === index) btn.classList.add('selected');
+            else btn.classList.remove('selected');
+        });
+        document.getElementById('feedback-area').style.display = 'none';
+    }
+
+    function renderPart(partNumber) {
+        state.currentPart = partNumber;
+        state.selectedIndex = null;
+        const main = document.getElementById('content-area');
+        let html = '';
+
+        if (partNumber === 1) {
+            document.getElementById('sub-header').innerText = "Part 1: Initial Presentation";
+            html = `
+                <div class="card p-6 animate-fade">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <img src="avatar-patient.jpg" alt="Patient Avatar" class="clinical-image w-full h-auto">
+                            <div class="bg-white p-4 rounded border border-steel-blue">
+                                <h3 class="font-bold text-ocean-blue border-b mb-2">Patient History</h3>
+                                <p class="text-sm">45-year-old female, 2 days of worsening abdominal pain, nausea, and vomiting.</p>
+                                <ul class="text-xs mt-2 list-disc ml-4 space-y-1">
+                                    <li>Pain: Started upper abdomen, now diffuse.</li>
+                                    <li>Chills: Intermittent, no documented fever.</li>
+                                    <li>PSHx: C-section 12 yrs ago.</li>
+                                    <li>PMHx: Obesity, hyperlipidemia.</li>
+                                    <li>Social: Denies tobacco/EtOH/drugs.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="vital-tag text-center">T: 37.9°C</div>
+                                <div class="vital-tag text-center">HR: 104</div>
+                                <div class="vital-tag text-center">BP: 132/84</div>
+                            </div>
+                            <div class="bg-white p-4 rounded border border-steel-blue">
+                                <h3 class="font-bold text-ocean-blue border-b mb-2">Physical Exam</h3>
+                                <p class="text-xs leading-relaxed italic">
+                                    "Awake, alert, no distress. Slight scleral icterus. Mucus membranes dry. Generalized abdominal pain, most severe in RUQ and epigastric regions. Extremities unremarkable."
+                                </p>
+                            </div>
+                            <div class="mt-4">
+                                <h3 class="text-lg font-bold mb-3">Decision: Initial Diagnostic Approach</h3>
+                                <div class="space-y-2">
+                                    <button class="option-btn text-sm" onclick="selectOption(0)">A. CT abdomen/pelvis without contrast</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(1)">B. RUQ ultrasound and laboratory evaluation</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(2)">C. Start antibiotics and admit for suspected cholecystitis</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(3)">D. MRCP immediately</button>
+                                </div>
+                                <div id="feedback-area" class="feedback-box"></div>
+                                <button onclick="validatePart1()" class="btn-primary w-full py-2 mt-4 rounded font-bold">Submit Decision</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (partNumber === 2) {
+            document.getElementById('sub-header').innerText = "Part 2: Diagnostic Evaluation";
+            html = `
+                <div class="card p-6 animate-fade">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <img src="ultrasound.jpg" alt="RUQ Ultrasound" class="clinical-image w-full h-auto">
+                            <div class="bg-white p-4 rounded border border-steel-blue">
+                                <h3 class="font-bold text-ocean-blue border-b mb-2">Imaging Results: RUQ Ultrasound</h3>
+                                <ul class="text-xs list-disc ml-4 space-y-1">
+                                    <li>Gallstones present.</li>
+                                    <li>Dilated common bile duct (12 mm).</li>
+                                    <li>No gallbladder wall thickening.</li>
+                                    <li>No pericholecystic fluid.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded border border-steel-blue">
+                                <h3 class="font-bold text-ocean-blue border-b mb-2">Laboratory Findings</h3>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                                    <div><span class="data-label">AST:</span> 220</div>
+                                    <div><span class="data-label">ALT:</span> 260</div>
+                                    <div><span class="data-label">Alk Phos:</span> 380</div>
+                                    <div><span class="data-label">T. Bili:</span> 4.1</div>
+                                    <div><span class="data-label">Lipase:</span> 68</div>
+                                    <div><span class="data-label">WBC:</span> 9.4</div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h3 class="text-lg font-bold mb-3">What is the most likely diagnosis?</h3>
+                                <div class="space-y-2">
+                                    <button class="option-btn text-sm" onclick="selectOption(0)">A. Acute cholecystitis</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(1)">B. Acute pancreatitis</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(2)">C. Choledocholithiasis</button>
+                                    <button class="option-btn text-sm" onclick="selectOption(3)">D. Cholangitis</button>
+                                </div>
+                                <div id="feedback-area" class="feedback-box"></div>
+                                <button onclick="validatePart2()" class="btn-primary w-full py-2 mt-4 rounded font-bold">Submit Diagnosis</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (partNumber === 3) {
+            document.getElementById('sub-header').innerText = "Part 3: Confirmatory Testing";
+            html = `
+                <div class="card p-6 animate-fade max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold mb-4 text-center">Best test to confirm choledocholithiasis?</h3>
+                    <div class="space-y-2">
+                        <button class="option-btn" onclick="selectOption(0)">A. Repeat RUQ ultrasound</button>
+                        <button class="option-btn" onclick="selectOption(1)">B. CT abdomen with IV contrast</button>
+                        <button class="option-btn" onclick="selectOption(2)">C. MRCP</button>
+                        <button class="option-btn" onclick="selectOption(3)">D. HIDA scan</button>
+                    </div>
+                    <div id="feedback-area" class="feedback-box"></div>
+                    <button onclick="validatePart3()" class="btn-primary w-full py-2 mt-4 rounded font-bold">Confirm Choice</button>
+                </div>
+            `;
+        } else if (partNumber === 4) {
+            document.getElementById('sub-header').innerText = "Part 4: Definitive Management";
+            html = `
+                <div class="card p-6 animate-fade">
+                    <div class="bg-indigo/10 p-4 rounded mb-6 border-l-4 border-indigo">
+                        <h3 class="font-bold text-indigo mb-1">MRCP Results:</h3>
+                        <p class="text-sm">8 mm stone in distal CBD. Mild intrahepatic biliary dilation. No signs of pancreatitis.</p>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-center">Best next management step?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="option-btn" onclick="selectOption(0)">A. Immediate cholecystectomy</button>
+                        <button class="option-btn" onclick="selectOption(1)">B. GI consultation for ERCP</button>
+                        <button class="option-btn" onclick="selectOption(2)">C. IV antibiotics and observation</button>
+                        <button class="option-btn" onclick="selectOption(3)">D. Percutaneous biliary drainage</button>
+                    </div>
+                    <div id="feedback-area" class="feedback-box"></div>
+                    <button onclick="validatePart4()" class="btn-primary w-full py-2 mt-6 rounded font-bold">Finalize Plan</button>
+                </div>
+            `;
+        }
+        main.innerHTML = html;
+    }
+
+    // Validation Functions
+    function validatePart1() {
+        const fb = document.getElementById('feedback-area');
+        if (state.selectedIndex === null) return;
+        if (state.selectedIndex === 1) {
+            fb.innerHTML = `<strong>Correct!</strong> RUQ ultrasound + labs are first-line for suspected biliary pathology.<br><button onclick="renderPart(2)" class="mt-2 bg-forest-green text-white px-4 py-1 rounded text-sm">Continue</button>`;
+            fb.className = "feedback-box feedback-correct";
+        } else {
+            const msgs = [
+                "CT A/P without contrast is good for evaluating for kidney stones, but not ideal for suspected biliary pathology. CT can miss biliary stones and no contrast can miss gallbladder wall enhancement.",
+                "",
+                "Treatment without diagnosis risks missing obstruction.",
+                "MRCP is confirmatory for choledocholithiasis or other biliary pathology but not first-line."
+            ];
+            fb.innerHTML = `<strong>Incorrect:</strong> ${msgs[state.selectedIndex]} Please try again.`;
+            fb.className = "feedback-box feedback-incorrect";
+        }
+        fb.style.display = "block";
+    }
+
+    function validatePart2() {
+        const fb = document.getElementById('feedback-area');
+        if (state.selectedIndex === null) return;
+        if (state.selectedIndex === 2) {
+            fb.innerHTML = `<strong>Correct!</strong> CBD dilation + cholestatic labs is concerning for possible choledocholithiasis.<br><button onclick="renderPart(3)" class="mt-2 bg-forest-green text-white px-4 py-1 rounded text-sm">Continue</button>`;
+            fb.className = "feedback-box feedback-correct";
+        } else {
+            const msgs = ["No sonographic cholecystitis findings.", "Lipase is normal.", "", "She lacks Charcot triad (fever, RUQ pain, jaundice); infection not yet evident."];
+            fb.innerHTML = `<strong>Incorrect:</strong> ${msgs[state.selectedIndex]} Please try again.`;
+            fb.className = "feedback-box feedback-incorrect";
+        }
+        fb.style.display = "block";
+    }
+
+    function validatePart3() {
+        const fb = document.getElementById('feedback-area');
+        if (state.selectedIndex === null) return;
+        if (state.selectedIndex === 2) {
+            fb.innerHTML = `<strong>Correct!</strong> MRCP is the noninvasive gold standard for biliary obstruction.<br><button onclick="renderPart(4)" class="mt-2 bg-forest-green text-white px-4 py-1 rounded text-sm">Continue</button>`;
+            fb.className = "feedback-box feedback-correct";
+        } else {
+            const msgs = ["Limited sensitivity for CBD stones.", "Can miss biliary stones.", "", "HIDA uses a radioactive tracer tracked as it moves to the intestine. It detects obstruction but isn't good at identifying a CBD stone as the cause."];
+            fb.innerHTML = `<strong>Incorrect:</strong> ${msgs[state.selectedIndex]} Please try again.`;
+            fb.className = "feedback-box feedback-incorrect";
+        }
+        fb.style.display = "block";
+    }
+
+    function validatePart4() {
+        const fb = document.getElementById('feedback-area');
+        if (state.selectedIndex === null) return;
+        if (state.selectedIndex === 1) {
+            fb.innerHTML = `<strong>Correct!</strong> ERCP is definitive therapy for CBD stones.<br><button onclick="showFinal()" class="mt-2 bg-forest-green text-white px-4 py-1 rounded text-sm">Finish Simulation</button>`;
+            fb.className = "feedback-box feedback-correct";
+        } else {
+            const msgs = [
+                "Generally, an ERCP is completed first to remove the CBD stone, then a cholecystectomy is performed. While surgeons can explore ducts laparoscopically, ERCP remains the gold standard, especially without cholecystitis.",
+                "",
+                "Choledocholithiasis requires stone removal; antibiotics alone (observation) is incorrect.",
+                "Reserved for unstable patients or failed ERCP."
+            ];
+            fb.innerHTML = `<strong>Incorrect:</strong> ${msgs[state.selectedIndex]} Please try again.`;
+            fb.className = "feedback-box feedback-incorrect";
+        }
+        fb.style.display = "block";
+    }
+
+    function showFinal() {
+        document.getElementById('sub-header').innerText = "Simulation Complete";
+        document.getElementById('content-area').innerHTML = `
+            <div class="card p-10 text-center animate-fade">
+                <div class="mb-4 text-forest-green">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Case Successful</h2>
+                <p class="text-lg mb-6">You have successfully diagnosed and managed the patient's Choledocholithiasis.</p>
+                <button onclick="window.location.reload()" class="btn-primary px-8 py-2 rounded-lg font-bold">Restart Simulation</button>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
